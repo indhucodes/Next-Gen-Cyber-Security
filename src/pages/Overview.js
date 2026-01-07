@@ -2,36 +2,47 @@ import React from 'react';
 import Header from '../components/Layout/Header';
 import ThreatMap from '../components/Dashboard/ThreatMap';
 import LiveTerminal from '../components/Dashboard/LiveTerminal';
+import AnimatedCounter from '../components/Dashboard/AnimatedCounter';
+import RealtimeActivityFeed from '../components/Dashboard/RealtimeActivityFeed';
 import { Activity, ShieldAlert, ShieldCheck, Globe } from 'lucide-react';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
-
-const StatCard = ({ title, value, icon: Icon, color }) => (
-    <div className="bg-[#1E293B]/50 border border-slate-700 rounded-2xl p-6 flex items-center justify-between hover:border-cyan-500/30 transition-all group">
-        <div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{title}</p>
-            <h3 className="text-3xl font-black text-white font-mono tracking-tighter group-hover:text-cyan-400 transition-colors">{value}</h3>
-        </div>
-        <div className={`p-3 rounded-lg bg-${color}-500/10 text-${color}-500`}>
-            <Icon size={24} />
-        </div>
-    </div>
-);
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, RadialBarChart, RadialBar, Legend } from 'recharts';
 
 const Overview = ({ history = [], isBackendOnline }) => {
     const totalScans = 1205 + history.length;
     const threats = history.filter(h => h.score > 50).length;
     const safe = history.filter(h => h.score <= 50).length;
 
+    // Use actual data or show placeholder with proper proportions
+    const displayThreats = threats || 18;
+    const displaySafe = safe || 8;
+
     const pieData = [
-        { name: 'Threats', value: threats, color: '#EF4444' }, // Red
-        { name: 'Safe', value: safe, color: '#10B981' }      // Emerald
+        { name: 'Threats', value: displayThreats, color: '#EF4444' },
+        { name: 'Safe', value: displaySafe, color: '#10B981' }
+    ];
+
+    // Radial chart data for better visualization
+    const radialData = [
+        {
+            name: 'Threats',
+            value: displayThreats,
+            fill: '#EF4444'
+        },
+        {
+            name: 'Safe',
+            value: displaySafe,
+            fill: '#10B981'
+        }
     ];
 
     const CustomTooltip = ({ active, payload }) => {
         if (active && payload && payload.length) {
             return (
-                <div className="bg-[#0F172A] border border-slate-700 p-2 rounded shadow-xl">
-                    <p className="text-xs font-bold text-white">{`${payload[0].name} : ${payload[0].value}`}</p>
+                <div className="bg-[#0F172A] border border-slate-700 p-3 rounded-lg shadow-xl">
+                    <p className="text-sm font-bold text-white">{`${payload[0].name}: ${payload[0].value}`}</p>
+                    <p className="text-xs text-slate-400 mt-1">
+                        {((payload[0].value / totalScans) * 100).toFixed(1)}% of total
+                    </p>
                 </div>
             );
         }
@@ -44,44 +55,20 @@ const Overview = ({ history = [], isBackendOnline }) => {
 
             <div className="px-8 py-8 space-y-6 animate-fade-in">
 
-                {/* STATS ROW */}
+                {/* STATS ROW with Animated Counters */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <StatCard title="Total Scans" value={totalScans.toLocaleString()} icon={Activity} color="cyan" />
-                    <StatCard title="Threats Neutralized" value={threats} icon={ShieldAlert} color="red" />
-                    <StatCard title="Safe Entities" value={safe} icon={ShieldCheck} color="emerald" />
-                    <StatCard title="Global Sensors" value="842" icon={Globe} color="blue" />
+                    <AnimatedCounter value={totalScans} label="Total Scans" icon={Activity} color="cyan" />
+                    <AnimatedCounter value={threats} label="Threats Neutralized" icon={ShieldAlert} color="red" />
+                    <AnimatedCounter value={safe} label="Safe Entities" icon={ShieldCheck} color="emerald" />
+                    <AnimatedCounter value={842} label="Global Sensors" icon={Globe} color="blue" />
                 </div>
 
                 {/* MAIN VISUALIZATION ROW */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[500px] h-auto">
 
-                    {/* COL 1: THREAT DISTRIBUTION (DONUT) */}
-                    <div className="bg-[#1E293B]/50 border border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center relative shadow-xl overflow-hidden h-80 lg:h-full">
-                        <h3 className="absolute top-6 left-6 text-xs font-bold text-slate-400 uppercase tracking-widest">Threat Ratio</h3>
-                        <div className="w-full h-full p-4">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={pieData}
-                                        innerRadius={60}
-                                        outerRadius={80}
-                                        paddingAngle={5}
-                                        dataKey="value"
-                                        stroke="none"
-                                    >
-                                        {pieData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.color} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip content={<CustomTooltip />} />
-                                </PieChart>
-                            </ResponsiveContainer>
-                            {/* Center Text Overlay */}
-                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-4">
-                                <span className="text-3xl lg:text-4xl font-black text-white">{totalScans.toLocaleString()}</span>
-                                <span className="text-[10px] uppercase tracking-widest text-slate-500">Total Scans</span>
-                            </div>
-                        </div>
+                    {/* COL 1: REAL-TIME ACTIVITY FEED */}
+                    <div className="bg-gradient-to-br from-[#1E293B] to-[#0F172A] border border-slate-700 rounded-2xl p-6 shadow-2xl overflow-hidden h-80 lg:h-full">
+                        <RealtimeActivityFeed history={history} />
                     </div>
 
                     {/* COL 2: THREAT MAP */}
@@ -142,7 +129,7 @@ const Overview = ({ history = [], isBackendOnline }) => {
                 </div>
 
             </div>
-        </div>
+        </div >
     );
 };
 
