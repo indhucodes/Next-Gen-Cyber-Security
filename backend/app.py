@@ -20,6 +20,12 @@ brain = LocalBrain()
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
+# Health Check
+@app.route('/health')
+@app.route('/healthz') # For Render Default
+def health_check():
+    return jsonify({"status": "online", "timestamp": datetime.now().isoformat()}), 200
+
 # Configuration
 VT_API_KEY = os.getenv("VT_API_KEY")
 DB_FILE = "phishing.db"
@@ -129,9 +135,6 @@ def get_virustotal_report(url):
         print(f"❌ CRITICAL ERROR: {e}")
         return None
 
-@app.route('/health', methods=['GET'])
-def health_check():
-    return jsonify({"status": "online"}), 200
 
 @app.route('/history', methods=['GET'])
 def get_history():
