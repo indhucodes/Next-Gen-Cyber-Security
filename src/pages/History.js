@@ -1,9 +1,46 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../components/Layout/Header';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Filter, Download } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 const History = ({ history }) => {
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filteredHistory, setFilteredHistory] = useState(history);
+    const location = useLocation();
+
+    // Get search query from URL params
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const searchParam = params.get('search');
+        if (searchParam) {
+            setSearchQuery(searchParam);
+        }
+    }, [location.search]);
+
+    // Filter history based on search query
+    useEffect(() => {
+        if (!searchQuery.trim()) {
+            setFilteredHistory(history);
+        } else {
+            const query = searchQuery.toLowerCase();
+            const filtered = history.filter(item => {
+                const url = (item.url || '').toLowerCase();
+                const status = (item.status || '').toLowerCase();
+                const source = item.vt_stats ? 'global threat grid' : 'local brain';
+
+                return url.includes(query) ||
+                    status.includes(query) ||
+                    source.includes(query);
+            });
+            setFilteredHistory(filtered);
+        }
+    }, [searchQuery, history]);
+
+    const handleSearch = (query) => {
+        setSearchQuery(query);
+    };
+
     // Mock trend data + real history mapping
     const data = [
         { name: 'Mon', scans: 400, threats: 240 },
@@ -16,7 +53,9 @@ const History = ({ history }) => {
     ];
 
     const handleExportExcel = () => {
-        if (!history || history.length === 0) {
+        const dataToExport = filteredHistory.length > 0 ? filteredHistory : history;
+
+        if (!dataToExport || dataToExport.length === 0) {
             alert("No data to export.");
             return;
         }
@@ -62,7 +101,7 @@ const History = ({ history }) => {
                         <th class="col-head" style="width: 120px;">Verdict</th>
                         <th class="col-head" style="width: 100px;">Risk Score</th>
                     </tr>
-                    ${history.map((h, i) => {
+                    ${dataToExport.map((h, i) => {
             const isThreat = h.status.includes('Phishing') || h.score > 50;
             const rowClass = isThreat ? 'row-threat' : (i % 2 === 0 ? 'row-even' : 'row-odd');
             return `
@@ -92,7 +131,7 @@ const History = ({ history }) => {
 
     return (
         <div className="pb-20">
-            <Header title="Analysis Log" />
+            <Header title="Analysis Log" onSearch={handleSearch} />
 
             <div className="px-8 py-8 space-y-8 animate-fade-in">
 
@@ -151,10 +190,12 @@ const History = ({ history }) => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-800 bg-[#1E293B]/50">
-                                {history.length === 0 ? (
-                                    <tr><td colSpan="5" className="px-6 py-8 text-center text-slate-600 italic">No logs available.</td></tr>
+                                {filteredHistory.length === 0 ? (
+                                    <tr><td colSpan="5" className="px-6 py-8 text-center text-slate-600 italic">
+                                        {searchQuery ? `No results found for "${searchQuery}"` : 'No logs available.'}
+                                    </td></tr>
                                 ) : (
-                                    history.map((h, i) => (
+                                    filteredHistory.map((h, i) => (
                                         <tr key={i} className="hover:bg-slate-700/50 transition duration-150 group">
                                             <td className="px-6 py-4 font-mono text-xs text-slate-500 group-hover:text-slate-300 whitespace-nowrap">{h.time}</td>
                                             <td className="px-6 py-4 font-mono text-xs text-white truncate max-w-[200px] sm:max-w-[300px]">{h.url}</td>
@@ -168,7 +209,11 @@ const History = ({ history }) => {
                         </table>
                     </div>
                     <div className="px-6 py-4 bg-[#0F172A]/50 border-t border-slate-800 text-xs text-slate-500 text-center">
-                        Displaying last {history.length} events
+                        {searchQuery ? (
+                            <>Showing {filteredHistory.length} of {history.length} events matching "{searchQuery}"</>
+                        ) : (
+                            <>Displaying last {history.length} events</>
+                        )}
                     </div>
                 </div>
 
