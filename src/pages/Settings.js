@@ -72,7 +72,7 @@ const Settings = ({ isBackendOnline, backendUrl }) => {
                                 <p className="text-xs text-slate-400 mt-1 max-w-xs">
                                     {engineMode === 'offline'
                                         ? "Strict Offline Mode. Using local neural heuristics only."
-                                        : "Standard Mode. Leveraging VirusTotal API + Local Engine."}
+                                        : "Standard Mode. Leveraging Cloud + Local Engine."}
                                 </p>
                             </div>
                             <button
@@ -171,3 +171,4 @@ const Settings = ({ isBackendOnline, backendUrl }) => {
 };
 
 export default Settings;
+
