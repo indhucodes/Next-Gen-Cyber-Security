@@ -17,21 +17,37 @@ function App() {
   useEffect(() => {
     const checkBackend = async () => {
       try {
-        const response = await fetch(`${BACKEND_URL}/health`);
-        setIsBackendOnline(response.ok);
+        const response = await fetch(`${BACKEND_URL}/health`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          // Add timeout to prevent hanging
+          signal: AbortSignal.timeout(3000)
+        });
 
-        // Load History if Online
         if (response.ok) {
-          const histRes = await fetch(`${BACKEND_URL}/history`);
-          const histData = await histRes.json();
-          setHistory(histData);
+          setIsBackendOnline(true);
+          // Load History if Online
+          try {
+            const histRes = await fetch(`${BACKEND_URL}/history`);
+            if (histRes.ok) {
+              const histData = await histRes.json();
+              setHistory(histData);
+            }
+          } catch (histError) {
+            console.log('Failed to load history:', histError);
+          }
+        } else {
+          setIsBackendOnline(false);
         }
-      } catch { setIsBackendOnline(false); }
+      } catch (error) {
+        // Network error, timeout, or backend is down
+        setIsBackendOnline(false);
+      }
     };
     checkBackend();
     const interval = setInterval(checkBackend, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [BACKEND_URL]);
 
   const handleScanComplete = (newRecord) => {
     setHistory(prev => [newRecord, ...prev]);
@@ -39,7 +55,7 @@ function App() {
 
   return (
     <Router>
-      <MainLayout isBackendOnline={isBackendOnline}>
+      <MainLayout isBackendOnline={isBackendOnline} history={history}>
         <Routes>
           <Route path="/" element={<Overview history={history} isBackendOnline={isBackendOnline} />} />
           <Route path="/scanner" element={<Scanner onScanComplete={handleScanComplete} backendUrl={BACKEND_URL} isBackendOnline={isBackendOnline} />} />
