@@ -1,10 +1,8 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Scan, History, Settings, ShieldCheck, Search, FileText, Shield } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+import { LayoutDashboard, Settings, ShieldCheck, Search, FileText, Shield } from 'lucide-react';
 
 const Sidebar = ({ isBackendOnline }) => {
-  const location = useLocation();
-
   const navItems = [
     { icon: LayoutDashboard, label: 'Overview', path: '/' },
     { icon: Search, label: 'URL Scanner', path: '/scanner' },
@@ -15,33 +13,45 @@ const Sidebar = ({ isBackendOnline }) => {
 
   return (
     <aside className="hidden md:flex w-64 bg-[#0B1120] border-r border-slate-800 flex-col h-screen fixed left-0 top-0 z-50">
+      {/* Logo Header */}
       <div className="h-20 flex items-center px-8 border-b border-slate-800/50">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded bg-cyan-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
             <ShieldCheck size={20} />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white tracking-tight leading-none">SHIELD<span className="text-cyan-400">.AI</span></h1>
+            <h1 className="text-lg font-bold text-white tracking-tight leading-none">
+              SHIELD<span className="text-cyan-400">.AI</span>
+            </h1>
           </div>
         </div>
       </div>
 
+      {/* Navigation Menu */}
       <nav className="flex-1 py-8 px-4 space-y-2">
-        {navItems.map((item, index) => (
+        {navItems.map((item) => (
           <React.Fragment key={item.path}>
-            {/* Add separator before Project Hub */}
-            {item.path === '/admin' && <div className="pt-4 border-t border-slate-700/50 my-2"></div>}
+            {/* Separator before Project Hub */}
+            {item.path === '/admin' && (
+              <div className="pt-4 border-t border-slate-700/50 my-2"></div>
+            )}
 
             <NavLink
               to={item.path}
+              end={item.path === '/'}
+              style={{ WebkitTapHighlightColor: 'transparent' }}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
-                  ? 'bg-cyan-900/20 text-cyan-400 border border-cyan-500/20 shadow-lg shadow-cyan-900/10'
-                  : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
-                }`
+                [
+                  'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',
+                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50',
+                  'select-none',
+                  isActive
+                    ? 'bg-cyan-900/20 text-cyan-400 border border-cyan-500/20 shadow-lg shadow-cyan-900/10'
+                    : 'text-slate-400 hover:bg-slate-800/50 hover:text-white border border-transparent',
+                ].join(' ')
               }
             >
-              <item.icon size={20} className="w-5 h-5" />
+              <item.icon size={20} className="w-5 h-5 flex-shrink-0" />
               <span className="text-sm font-medium tracking-wide">{item.label}</span>
               {item.path === '/' && (
                 <span className="ml-auto w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
@@ -51,11 +61,18 @@ const Sidebar = ({ isBackendOnline }) => {
         ))}
       </nav>
 
+      {/* System Status Footer */}
       <div className="p-4 border-t border-slate-800/50">
         <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-800">
           <div className="flex items-center gap-3 mb-2">
-            <div className={`w-2 h-2 rounded-full animate-pulse ${isBackendOnline ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
-            <span className={`text-[10px] font-bold uppercase tracking-widest ${isBackendOnline ? 'text-emerald-500' : 'text-red-500'}`}>
+            <div
+              className={`w-2 h-2 rounded-full animate-pulse ${isBackendOnline ? 'bg-emerald-500' : 'bg-red-500'
+                }`}
+            ></div>
+            <span
+              className={`text-[10px] font-bold uppercase tracking-widest ${isBackendOnline ? 'text-emerald-500' : 'text-red-500'
+                }`}
+            >
               {isBackendOnline ? 'System Online' : 'System Offline'}
             </span>
           </div>
