@@ -112,7 +112,7 @@ const Admin = () => {
                         <div className="flex-1 text-center md:text-left">
                             <h4 className="text-lg font-black text-white uppercase tracking-tight mb-2">Backend Infrastructure</h4>
                             <p className="text-sm text-slate-400 mb-4 max-w-2xl">
-                                Powered by a robust Python Flask REST API with SQLite persistence. Integrates a local neural heuristic engine alongside VirusTotal's Threat Grid for hybrid detection capabilities.
+                                Powered by a robust Python Flask REST API with SQLite persistence. Integrates a local neural heuristic engine alongside Cloud Threat Grid for hybrid detection capabilities.
                             </p>
                             <div className="flex flex-wrap justify-center md:justify-start gap-2">
                                 <span className="px-3 py-1 bg-purple-900/20 text-purple-400 rounded-full text-[10px] font-bold border border-purple-500/20">Python 3.9+</span>
@@ -168,3 +168,4 @@ const Admin = () => {
 };
 
 export default Admin;
+
